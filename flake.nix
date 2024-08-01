@@ -2,6 +2,11 @@
   outputs =
     { self, ... }:
     rec {
+      withConfig = config: nixpkgs: {
+        legacyPackages = builtins.mapAttrs (
+          system: pkgs: import nixpkgs ({ inherit system; } // config)
+        ) nixpkgs.legacyPackages;
+      };
       using =
         pkgs: recipes:
         let
@@ -11,7 +16,9 @@
           ) recipes;
         in
         result;
+
       usingFor = pkgGroup: recipes: builtins.mapAttrs (_: pkgs: using pkgs recipes) pkgGroup;
+
       usingPkgs =
         pkgGroup: recipes:
         usingFor pkgGroup (
@@ -25,6 +32,7 @@
               };
           }
         );
+
       usingShells =
         pkgGroup: recipes:
         usingFor pkgGroup (
@@ -38,8 +46,10 @@
               };
           }
         );
+
       usingOverlays =
         recipes: self: super:
         builtins.mapAttrs (name: recipe: self.callPackage recipe { }) recipes;
+
     };
 }
