@@ -17,5 +17,13 @@
           name = "default-env";
           paths = builtins.attrValues (using pkgs recipes);
       };});
+      usingShells = pkgGroup: recipes: usingFor pkgGroup (recipes // {
+        default =
+          { mkShell, pkgs }:
+          mkShell {
+            name = "default-shell";
+            packages = builtins.attrValues (using pkgs recipes);
+          };
+      });
     };
 }
