@@ -50,7 +50,7 @@ aka. extensible system for cooking and sharing packages
 ```
 
 ## Manually using the API
-```
+```nix
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
   inputs.cook.url = "github:tomberek/cook";
@@ -73,7 +73,7 @@ aka. extensible system for cooking and sharing packages
 ```
 
 ## Abusing `__functor`
-```
+```nix
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
   inputs.__functor.url = "path:/home/tom/office/nebu/t/simple";
@@ -91,7 +91,7 @@ aka. extensible system for cooking and sharing packages
 
 
 # Example to use nixpkgs with unfree.
-```
+```nix
       nixpkgs.legacyPackages = builtins.mapAttrs (_: pkgs: import pkgs.path {
         inherit system;
         config.allowUnfree = true;
