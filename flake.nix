@@ -2,33 +2,7 @@
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
 
   outputs =
-    inputs:
-    with inputs;
-    {
-      /*
-      packages = self.lib.usingEach nixpkgs.legacyPackages (
-        self.recipes
-        // {
-          default =
-            { buildEnv, pkgs }:
-            buildEnv {
-              name = "default";
-              paths = builtins.attrValues (self.lib.using pkgs self.recipes);
-            };
-        }
-      );
-
-      devShells = self.lib.usingEach nixpkgs.legacyPackages {
-        default =
-          { pkgs, mkShell }:
-          mkShell {
-            name = "shell";
-            packages = builtins.attrValues (self.lib.using pkgs self.recipes);
-          };
-      };
-
-      overlays.default = self.lib.toOverlay self.recipes;
-      */
+    inputs: with inputs; {
 
       /**
         Library functions
@@ -41,13 +15,15 @@
           recipes: final: prev:
           builtins.mapAttrs (
             name: recipe:
-            if recipe == { }
-            then prev.${name}
-            else if builtins.isAttrs recipe
-            then
-            let res = toOverlay recipe final prev;
-            in  res
-            else final.callPackage recipe { }
+            if recipe == { } then
+              prev.${name}
+            else if builtins.isAttrs recipe then
+              let
+                res = toOverlay recipe final prev;
+              in
+              res
+            else
+              final.callPackage recipe { }
           ) recipes;
 
         /**
@@ -65,15 +41,40 @@
         */
         usingEach = group: recipes: builtins.mapAttrs (_: pkgs: using pkgs recipes) group;
 
+        mkFlake = inputs: flake: {
+          inherit (flake) recipes;
+          packages = usingEach inputs.nixpkgs.legacyPackages (
+            flake.recipes
+            // {
+              default =
+                { buildEnv, pkgs }:
+                buildEnv {
+                  name = "default";
+                  paths = builtins.attrValues (using pkgs flake.recipes);
+                };
+            }
+          );
+
+          devShells = usingEach inputs.nixpkgs.legacyPackages {
+            default =
+              { pkgs, mkShell }:
+              mkShell {
+                name = "shell";
+                packages = builtins.attrValues (using pkgs flake.recipes);
+              };
+          };
+
+          overlays.default = toOverlay flake.recipes;
+        };
       };
-    /*
-    let
-    in
-      nixpkgs.legacyPackages = builtins.mapAttrs (_: pkgs: import pkgs.path {
-        inherit system;
-        config.allowUnfree = true;
-      }) inputs.nixpkgs.legacyPackages;
-    */
+      /*
+        let
+        in
+          nixpkgs.legacyPackages = builtins.mapAttrs (_: pkgs: import pkgs.path {
+            inherit system;
+            config.allowUnfree = true;
+          }) inputs.nixpkgs.legacyPackages;
+      */
       # }}}
     };
 }
