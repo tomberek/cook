@@ -3,13 +3,8 @@
   inputs.cook.url = "github:tomberek/cook";
 
   outputs =
-    {
-      self,
-      nixpkgs,
-      cook,
-      ...
-    }:
-    {
+    inputs:
+    inputs.cook.lib.mkFlake inputs {
 
       recipes = {
         hello = { };
@@ -33,16 +28,5 @@
             '';
           };
       };
-
-      packages = cook.lib.usingEach nixpkgs.legacyPackages self.recipes;
-      devShells = cook.lib.usingEach nixpkgs.legacyPackages {
-        default =
-          { pkgs, mkShell }:
-          mkShell {
-            name = "shell";
-            packages = builtins.attrValues (cook.lib.using pkgs self.recipes);
-          };
-      };
-      overlays.default = cook.lib.toOverlay self.recipes;
     };
 }
