@@ -8,8 +8,6 @@
 
       recipes = {
 
-        jq = { }; # Grab jq from inputs.nixpkgs by default;
-
         my-custom-package =
           { runCommand }:
           runCommand "thing" { } ''

@@ -1,11 +1,44 @@
 # Simple, recipe based flake library
 aka. extensible system for cooking and sharing packages
 
-- Use recipes (functions that produce derivations, basically any default.nix from Nixpkgs).
-- Generate overlays from the recipes using lib.toOverlay
-- Generate packages from the overlay
-- use mkFlake to generate a default buildEnv and devShell
+- Use "recipes"
+    - functions that produce derivations
+    - basically any default.nix from Nixpkgs
+    - `callPackage`-able things
+    - no system
+- Generate everything with lib.mkFlake
+- Generate overlays with lib.toOverlay
+- Generate packages with lib.usingEach
+- Generate devShells with lib.usingEach
 
+## Why?
+- Composing a flake can be intimidating:
+    - systems
+    - callPackage
+    - overlays
+- flake users tend to define and expose packages.SYSTEM.name
+  which is harder to reuse with new systems or cross-compile
+- use the same concept that people will encounter in a Nixpkgs `default.nix`
+
+# Examples
+
+## Putting recipes into default.nix
+```nix
+{
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
+  inputs.cook.url = "github:tomberek/cook";
+
+  outputs =
+    inputs:
+    inputs.cook inputs {
+      recipes.my-custom = ./pkgs/custom/;
+      recipes.my-custom = ./pkgs/custom-2/default.nix;
+    };
+}
+```
+
+
+## Custom inline packages
 ```nix
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
@@ -16,8 +49,6 @@ aka. extensible system for cooking and sharing packages
     inputs.cook inputs {
 
       recipes = {
-
-        jq = { }; # Grab jq from inputs.nixpkgs by default;
 
         my-custom-package =
           { runCommand }:
@@ -33,7 +64,7 @@ aka. extensible system for cooking and sharing packages
         my-other-package =
           { stdenv, gnutar }:
           stdenv.mkDerivation {
-            name = "blah";
+            name = "hello";
             src = inputs.nixpkgs.legacyPackages.x86_64-linux.hello.src;
             buildCommand = ''
               set -x
@@ -48,6 +79,29 @@ aka. extensible system for cooking and sharing packages
     };
 }
 ```
+
+## Composition
+Recipes from another flake don't depend on the Nixpkgs in the other flake,
+making it easier to avoid having binaries from multiple Nixpkgs in a runtime closure.
+```nix
+{
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
+  inputs.cook.url = "github:tomberek/cook";
+
+  inputs.my-other-flake.url = "github:ORG/REPO";
+
+  outputs =
+    inputs:
+    inputs.cook inputs {
+
+      recipes = inputs.my-other-flake.recipes // {
+        my-custom = ./pkgs/custom-2/default.nix;
+      };
+
+    };
+}
+```
+
 
 ## Manually using the API
 ```nix
