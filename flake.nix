@@ -3,6 +3,10 @@
 
   outputs =
     inputs: with inputs; {
+      /**
+        Expose mkFlake by applying the flake as a function
+      */
+      __functor = self: inputs.self.lib.mkFlake;
 
       /**
         Library functions
