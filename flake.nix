@@ -43,6 +43,10 @@
         */
         usingEach = group: recipes: builtins.mapAttrs (_: pkgs: using pkgs recipes) group;
 
+        /** Helper function to make a flake from recipes.
+            Creates a set of overlays.
+            Creates a default buildEnv package and devShell as well.
+        */
         mkFlake = inputs: flake: {
           inherit (flake) recipes;
           packages = usingEach inputs.nixpkgs.legacyPackages (

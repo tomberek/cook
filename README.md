@@ -79,8 +79,8 @@ aka. extensible system for cooking and sharing packages
   inputs.__functor.url = "github:tomberek/cook";
 
   outputs =
-    inputs:
-    inputs {
+    _:
+    _ {
 
       recipes.jq = { };
       recipes.hello = { };
