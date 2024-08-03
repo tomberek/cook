@@ -1,6 +1,6 @@
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
-  inputs.cook.url = "path:/home/tom/office/nebu/t/simple";
+  inputs.cook.url = "github:tomberek/cook";
 
   outputs =
     inputs:
