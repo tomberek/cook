@@ -1,6 +1,4 @@
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
-
   outputs =
     inputs: with inputs; {
       /**
@@ -51,20 +49,20 @@
             flake.recipes
             // {
               default =
-                { buildEnv, pkgs }:
+                { buildEnv, pkgs, lib }:
                 buildEnv {
                   name = "default";
-                  paths = builtins.attrValues (using pkgs flake.recipes);
+                  paths = lib.collect lib.isDerivation (using pkgs flake.recipes);
                 };
             }
           );
 
           devShells = usingEach inputs.nixpkgs.legacyPackages {
             default =
-              { pkgs, mkShell }:
+              { pkgs, mkShell, lib }:
               mkShell {
                 name = "shell";
-                packages = builtins.attrValues (using pkgs flake.recipes);
+                packages = lib.collect lib.isDerivation (using pkgs flake.recipes);
               };
           };
 
