@@ -3,13 +3,13 @@
 ```nix
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
-  inputs.simple.url = "github:tomberek/simple";
+  inputs.cook.url = "github:tomberek/cook";
 
   outputs =
     {
       self,
       nixpkgs,
-      simple,
+      cook,
       ...
     }:
     {
@@ -37,16 +37,16 @@
           };
       };
 
-      packages = simple.lib.usingEach nixpkgs.legacyPackages self.recipes;
-      devShells = simple.lib.usingEach nixpkgs.legacyPackages {
+      packages = cook.lib.usingEach nixpkgs.legacyPackages self.recipes;
+      devShells = cook.lib.usingEach nixpkgs.legacyPackages {
         default =
           { pkgs, mkShell }:
           mkShell {
             name = "shell";
-            packages = builtins.attrValues (simple.lib.using pkgs self.recipes);
+            packages = builtins.attrValues (cook.lib.using pkgs self.recipes);
           };
       };
-      overlays.default = simple.lib.toOverlay self.recipes;
+      overlays.default = cook.lib.toOverlay self.recipes;
     };
 }
 ```
