@@ -1,6 +1,3 @@
-# Simple, recipe based flake library
-
-```nix
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
   inputs.simple.url = "github:tomberek/simple";
@@ -49,13 +46,3 @@
       overlays.default = simple.lib.toOverlay self.recipes;
     };
 }
-```
-
-
-# Example to use nixpkgs with unfree.
-```
-      nixpkgs.legacyPackages = builtins.mapAttrs (_: pkgs: import pkgs.path {
-        inherit system;
-        config.allowUnfree = true;
-      }) inputs.nixpkgs.legacyPackages;
-```
