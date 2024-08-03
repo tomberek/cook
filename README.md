@@ -9,7 +9,7 @@ aka. extensible system for cooking and sharing packages
 ```nix
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
-  inputs.cook.url = "path:/home/tom/office/nebu/t/simple";
+  inputs.cook.url = "github:tomberek/cook";
 
   outputs =
     inputs:
@@ -76,7 +76,7 @@ aka. extensible system for cooking and sharing packages
 ```nix
 {
   inputs.nixpkgs.url = "github:NixOS/nixpkgs";
-  inputs.__functor.url = "path:/home/tom/office/nebu/t/simple";
+  inputs.__functor.url = "github:tomberek/cook";
 
   outputs =
     inputs:
@@ -97,3 +97,6 @@ aka. extensible system for cooking and sharing packages
         config.allowUnfree = true;
       }) inputs.nixpkgs.legacyPackages;
 ```
+
+# Questions
+- should it be just recipes or recipes.packages+recipes.devShells?
