@@ -1,55 +1,80 @@
 {
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
+
   outputs =
-    { self, ... }:
-    rec {
-      withConfig = config: nixpkgs: {
-        legacyPackages = builtins.mapAttrs (
-          system: pkgs: import nixpkgs ({ inherit system; } // config)
-        ) nixpkgs.legacyPackages;
+    inputs:
+    with inputs;
+    {
+      /*
+      packages = self.lib.usingEach nixpkgs.legacyPackages (
+        self.recipes
+        // {
+          default =
+            { buildEnv, pkgs }:
+            buildEnv {
+              name = "default";
+              paths = builtins.attrValues (self.lib.using pkgs self.recipes);
+            };
+        }
+      );
+
+      devShells = self.lib.usingEach nixpkgs.legacyPackages {
+        default =
+          { pkgs, mkShell }:
+          mkShell {
+            name = "shell";
+            packages = builtins.attrValues (self.lib.using pkgs self.recipes);
+          };
       };
-      using =
-        pkgs: recipes:
-        let
-          result = builtins.mapAttrs (
+
+      overlays.default = self.lib.toOverlay self.recipes;
+      */
+
+      /**
+        Library functions
+      */
+      lib = rec {
+        /**
+          Convert recipes to an overlay
+        */
+        toOverlay =
+          recipes: final: prev:
+          builtins.mapAttrs (
             name: recipe:
-            if recipe == { } then pkgs.${name} else pkgs.lib.callPackageWith (pkgs // result) recipe { }
+            if recipe == { }
+            then prev.${name}
+            else if builtins.isAttrs recipe
+            then
+            let res = toOverlay recipe final prev;
+            in  res
+            else final.callPackage recipe { }
           ) recipes;
-        in
-        result;
 
-      usingFor = pkgGroup: recipes: builtins.mapAttrs (_: pkgs: using pkgs recipes) pkgGroup;
+        /**
+          Use a pkgset to convert recipes to packages
+        */
+        using =
+          pkgs: recipes:
+          let
+            a = pkgs.lib.makeScope pkgs.newScope (final: (toOverlay recipes) final pkgs);
+          in
+          a.packages a;
 
-      usingPkgs =
-        pkgGroup: recipes:
-        usingFor pkgGroup (
-          recipes
-          // {
-            default =
-              { buildEnv, pkgs }:
-              buildEnv {
-                name = "default-env";
-                paths = builtins.attrValues (using pkgs recipes);
-              };
-          }
-        );
+        /**
+          Alternative form of `using` for mapAttrs
+        */
+        usingEach = group: recipes: builtins.mapAttrs (_: pkgs: using pkgs recipes) group;
 
-      usingShells =
-        pkgGroup: recipes:
-        usingFor pkgGroup (
-          recipes
-          // {
-            default =
-              { mkShell, pkgs }:
-              mkShell {
-                name = "default-shell";
-                packages = builtins.attrValues (using pkgs recipes);
-              };
-          }
-        );
-
-      usingOverlays =
-        recipes: self: super:
-        builtins.mapAttrs (name: recipe: self.callPackage recipe { }) recipes;
+      };
+    /*
+    let
+    in
+      nixpkgs.legacyPackages = builtins.mapAttrs (_: pkgs: import pkgs.path {
+        inherit system;
+        config.allowUnfree = true;
+      }) inputs.nixpkgs.legacyPackages;
+    */
+      # }}}
 
     };
 }
