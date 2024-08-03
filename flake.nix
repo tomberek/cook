@@ -19,7 +19,7 @@
             name: recipe:
             if recipe == { } then
               prev.${name}
-            else if builtins.isAttrs recipe then
+            else if builtins.isAttrs recipe && !recipe?__functor then
               let
                 res = toOverlay recipe final prev;
               in
