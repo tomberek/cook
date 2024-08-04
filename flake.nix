@@ -50,25 +50,24 @@
         mkFlake = inputs: flake: {
           inherit (flake) recipes;
           packages = usingEach inputs.nixpkgs.legacyPackages (
-            flake.recipes
-            // {
+            {
               default =
                 { buildEnv, pkgs, lib }:
                 buildEnv {
                   name = "default";
                   paths = lib.collect lib.isDerivation (using pkgs flake.recipes);
                 };
-            }
+            } // flake.recipes or {}
           );
 
-          devShells = usingEach inputs.nixpkgs.legacyPackages {
+          devShells = usingEach inputs.nixpkgs.legacyPackages ({
             default =
               { pkgs, mkShell, lib }:
               mkShell {
                 name = "shell";
                 packages = lib.collect lib.isDerivation (using pkgs flake.recipes);
               };
-          };
+          } // flake.recipes.devShells or {});
 
           overlays.default = toOverlay flake.recipes;
         };
