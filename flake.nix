@@ -117,6 +117,13 @@
         );
         overlays.default = toOverlay flake.recipes;
       };
+
+      # Enforces a "simple lockless-recipes", no subflakes for inheritance, narHash causes topdir to load
+      getRecipes =
+        flake:
+        (builtins.getFlake (
+          builtins.unsafeDiscardStringContext "path://${flake.outPath}?narHash=${flake.narHash}"
+        )).recipes or flake.recipes;
     };
   };
 }
