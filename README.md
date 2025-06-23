@@ -145,11 +145,23 @@ making it easier to avoid having binaries from multiple Nixpkgs in a runtime clo
 
 
 # Example to use nixpkgs with unfree.
+
+See [flake.nix](./examples/unfree/flake.nix)
+
 ```nix
-      nixpkgs.legacyPackages = builtins.mapAttrs (_: pkgs: import pkgs.path {
-        inherit system;
-        config.allowUnfree = true;
-      }) inputs.nixpkgs.legacyPackages;
+   inputs.cook.lib.mkFlake
+      {
+        nixpkgs.legacyPackages = builtins.mapAttrs (
+          system: pkgs:
+          import pkgs.path {
+            inherit system;
+            config.allowUnfree = true;
+          }
+        ) inputs.nixpkgs.legacyPackages;
+      }
+      {
+        recipes.hello-unfree = { };
+      };
 ```
 
 # Questions
